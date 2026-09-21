@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SITE_CONFIG } from '../config/site';
-import { X, ExternalLink, Download, CheckCircle2, Lock, Sparkles, AlertCircle } from 'lucide-react';
+import { X, ExternalLink, Download, CheckCircle2, Lock, Sparkles, AlertCircle, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { triggerRewardedPopup, triggerRewardedInterstitial } from '../lib/adService';
 
 interface DownloadGateModalProps {
   isOpen: boolean;
@@ -59,10 +60,36 @@ export const DownloadGateModal: React.FC<DownloadGateModalProps> = ({
   const handleOpenSponsor = () => {
     setPopupBlocked(false);
 
+    // Trigger Rewarded Popup Ad:
+    // show_11850821('pop').then(() => { ... }).catch(e => { ... })
+    triggerRewardedPopup().then((rewarded) => {
+      if (rewarded) {
+        // User watched ad till the end or closed it in interstitial format
+        // Reward: Fast-track instant unlock!
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        setIsReady(true);
+        setCountdown(0);
+        try {
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#d4af37', '#7b2c28', '#f5ebd7'],
+          });
+        } catch {
+          // Ignore
+        }
+      }
+    }).catch((e) => {
+      console.warn('Ad popup notice:', e);
+    });
+
     try {
       const newTab = window.open(SITE_CONFIG.sponsorUrl, '_blank', 'noopener,noreferrer');
       if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        // Popup might have been blocked
         setPopupBlocked(true);
       }
     } catch {
@@ -88,7 +115,6 @@ export const DownloadGateModal: React.FC<DownloadGateModalProps> = ({
           timerRef.current = null;
         }
         setIsReady(true);
-        // Trigger celebratory confetti
         try {
           confetti({
             particleCount: 50,
@@ -103,8 +129,38 @@ export const DownloadGateModal: React.FC<DownloadGateModalProps> = ({
     }, 1000);
   };
 
-  const handleTriggerDownload = () => {
+  const handleFastTrackAd = async () => {
+    const rewarded = await triggerRewardedPopup();
+    if (rewarded) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsReady(true);
+      setCountdown(0);
+      try {
+        confetti({
+          particleCount: 60,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#d4af37', '#7b2c28', '#f5ebd7'],
+        });
+      } catch {
+        // Ignore
+      }
+    }
+  };
+
+  const handleTriggerDownload = async () => {
     if (isReady && !isDownloading) {
+      try {
+        // Rewarded Interstitial:
+        // show_11850821().then(() => { alert('You have seen an ad!'); onDownloadConfirmed(); })
+        await triggerRewardedInterstitial();
+      } catch (err) {
+        console.warn('Rewarded interstitial notice:', err);
+      }
+      // Execute user reward function: proceed with HD postcard generation
       onDownloadConfirmed();
     }
   };
@@ -201,6 +257,18 @@ export const DownloadGateModal: React.FC<DownloadGateModalProps> = ({
                 <Lock className="w-4 h-4" />
                 <span>🔒 Download Locked ({countdown}s)</span>
               </button>
+
+              {/* Fast Track Option via Rewarded Popup */}
+              <div className="pt-2 border-t border-[#d4af37]/15">
+                <button
+                  type="button"
+                  onClick={handleFastTrackAd}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#2e1d18] hover:bg-[#3d2620] text-[#ffd875] border border-[#d4af37]/40 text-xs font-serif font-medium transition cursor-pointer active:scale-98"
+                >
+                  <Zap className="w-3.5 h-3.5 text-[#ffd875]" />
+                  <span>⚡ বিজ্ঞাপন দেখে সরাসরি আনলক করুন (Skip Wait)</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">

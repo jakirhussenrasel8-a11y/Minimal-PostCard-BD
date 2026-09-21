@@ -54,7 +54,9 @@ import {
   Compass,
   Shuffle,
   Wand2,
+  Zap,
 } from 'lucide-react';
+import { triggerRewardedInterstitial } from '../lib/adService';
 
 interface PostcardGeneratorProps {
   initialPostcard?: PostcardTemplate;
@@ -328,6 +330,32 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
     }
   };
 
+  // Instant download rewarded with interstitial ad (skips waiting gate)
+  const handleInstantRewardedDownload = async () => {
+    if (!previewRef.current || isExporting) return;
+    setIsExporting(true);
+
+    try {
+      // Trigger Rewarded Interstitial
+      await triggerRewardedInterstitial();
+
+      // User reward: HD export without waiting
+      await exportPostcardNode(previewRef.current, {
+        format: state.exportFormat,
+        quality: 0.98,
+        filename: `MinimalPostCardBD_${state.selectedPostcard.title.replace(/\s+/g, '_')}`,
+        pixelRatio: 2.8,
+      });
+      setExportSuccessMessage('🎉 আপনার Ultra HD পোস্টকার্ডটি সফলভাবে ডাউনলোড হয়েছে!');
+      setTimeout(() => setExportSuccessMessage(null), 5000);
+    } catch (err) {
+      console.error('Instant export failure:', err);
+      alert('পোস্টকার্ড রেন্ডার করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const getShareData = () => ({
     title: 'Minimal PostCard BD',
     quote: state.selectedQuoteText,
@@ -497,16 +525,29 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
                 </button>
               </div>
 
-              {/* Main Download Button */}
-              <button
-                type="button"
-                onClick={() => setIsDownloadGateOpen(true)}
-                disabled={isExporting}
-                className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#7b2c28] via-[#8f322b] to-[#7b2c28] hover:from-[#9c3730] hover:to-[#9c3730] text-[#fff8ee] text-sm sm:text-base font-serif font-bold border border-[#d4af37]/60 shadow-xl shadow-red-950/40 transition-all cursor-pointer active:scale-98"
-              >
-                <Download className="w-5 h-5 text-[#ffd875]" />
-                <span>⬇️ HD পোস্টকার্ড ডাউনলোড করুন</span>
-              </button>
+              {/* Main Download Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2.5 flex-1 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setIsDownloadGateOpen(true)}
+                  disabled={isExporting}
+                  className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-[#7b2c28] via-[#8f322b] to-[#7b2c28] hover:from-[#9c3730] hover:to-[#9c3730] text-[#fff8ee] text-xs sm:text-sm font-serif font-bold border border-[#d4af37]/60 shadow-xl shadow-red-950/40 transition-all cursor-pointer active:scale-98"
+                >
+                  <Download className="w-4 h-4 text-[#ffd875]" />
+                  <span>⬇️ HD ডাউনলোড</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleInstantRewardedDownload}
+                  disabled={isExporting}
+                  title="বিজ্ঞাপন দেখে অপেক্ষা ছাড়া ডাউনলোড করুন"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-[#2a1c14] hover:bg-[#38261c] text-[#ffd875] text-xs sm:text-sm font-serif font-bold border border-[#d4af37]/50 shadow-md transition-all cursor-pointer active:scale-98"
+                >
+                  <Zap className="w-4 h-4 text-[#ffd875]" />
+                  <span>⚡ দ্রুত ডাউনলোড (Ad)</span>
+                </button>
+              </div>
             </div>
 
             {/* Social Media Share Section */}

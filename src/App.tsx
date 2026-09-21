@@ -18,6 +18,7 @@ import { DownloadGateModal } from './components/DownloadGateModal';
 import { Footer } from './components/Footer';
 import { PrivacyPolicy, TermsAndConditions, ContactPage } from './components/StaticPages';
 import { exportPostcardNode } from './lib/exportPostcard';
+import { initInAppInterstitial } from './lib/adService';
 import {
   Sparkles,
   Flame,
@@ -82,6 +83,11 @@ export default function App() {
   useEffect(() => {
     recordTabNavigation(activeTab);
   }, [activeTab, recordTabNavigation]);
+
+  // Monetization SDK: In-App Interstitial initialization
+  useEffect(() => {
+    initInAppInterstitial();
+  }, []);
 
   // Navigate to generator with template
   const handleUsePostcard = (postcard: PostcardTemplate) => {
