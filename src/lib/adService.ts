@@ -22,7 +22,7 @@ export const initInAppInterstitial = (): void => {
   const tryInit = () => {
     if (typeof window.show_11850821 === 'function') {
       try {
-        window.show_11850821({
+        const result = window.show_11850821({
           type: 'inApp',
           inAppSettings: {
             frequency: 2,
@@ -32,6 +32,13 @@ export const initInAppInterstitial = (): void => {
             everyPage: false,
           },
         });
+
+        // Ensure promise rejection is caught so it doesn't trigger unhandled 'Failed to fetch'
+        if (result && typeof result.catch === 'function') {
+          result.catch((err: any) => {
+            console.warn('In-app ad notice caught:', err);
+          });
+        }
         inAppInitialized = true;
       } catch (err) {
         console.warn('Notice: In-App Interstitial ad init deferred/caught:', err);
@@ -60,7 +67,13 @@ export const triggerRewardedPopup = async (): Promise<boolean> => {
 
   if (typeof window.show_11850821 === 'function') {
     try {
-      await window.show_11850821('pop');
+      const res = window.show_11850821('pop');
+      if (res && typeof res.then === 'function') {
+        await res.catch((e: any) => {
+          console.warn('Popup ad catch:', e);
+          return null;
+        });
+      }
       return true;
     } catch (err) {
       console.warn('Rewarded popup notice:', err);
@@ -82,7 +95,13 @@ export const triggerRewardedInterstitial = async (): Promise<boolean> => {
 
   if (typeof window.show_11850821 === 'function') {
     try {
-      await window.show_11850821();
+      const res = window.show_11850821();
+      if (res && typeof res.then === 'function') {
+        await res.catch((e: any) => {
+          console.warn('Rewarded interstitial notice:', e);
+          return null;
+        });
+      }
       return true;
     } catch (err) {
       console.warn('Rewarded interstitial notice:', err);

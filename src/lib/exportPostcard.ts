@@ -35,14 +35,14 @@ export async function exportPostcardNode(
         dataUrl = await toJpeg(node, {
           quality,
           pixelRatio,
-          cacheBust: true,
+          cacheBust: false,
           backgroundColor: '#161311',
           filter: exportFilter,
         });
       } else {
         dataUrl = await toPng(node, {
           pixelRatio,
-          cacheBust: true,
+          cacheBust: false,
           filter: exportFilter,
         });
       }

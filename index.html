@@ -42,8 +42,36 @@
     }
     </script>
 
+    <!-- Global resilience for network/ad blocker exceptions -->
+    <script>
+      window.addEventListener('unhandledrejection', function (event) {
+        if (event && event.reason) {
+          var errStr = String(event.reason.message || event.reason || '');
+          if (
+            errStr.indexOf('Failed to fetch') !== -1 ||
+            errStr.indexOf('NetworkError') !== -1 ||
+            errStr.indexOf('Load failed') !== -1 ||
+            errStr.indexOf('libtl') !== -1 ||
+            errStr.indexOf('show_11850821') !== -1
+          ) {
+            console.warn('Silently handled background network/ad notice:', errStr);
+            event.preventDefault();
+          }
+        }
+      });
+      window.addEventListener('error', function (event) {
+        if (event && event.message) {
+          var msg = String(event.message);
+          if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('Script error') !== -1) {
+            console.warn('Silently handled network error:', msg);
+            event.preventDefault();
+          }
+        }
+      });
+    </script>
+
     <!-- Monetization SDK -->
-    <script src='//libtl.com/sdk.js' data-zone='11850821' data-sdk='show_11850821'></script>
+    <script async src='https://libtl.com/sdk.js' data-zone='11850821' data-sdk='show_11850821'></script>
   </head>
   <body class="bg-[#0e0c0b] text-[#f5ebd7] antialiased selection:bg-[#7b2c28] selection:text-[#fff4e3]">
     <div id="root"></div>
