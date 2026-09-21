@@ -2,9 +2,160 @@
 <html lang="bn">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Minimal PostCard BD – Vintage Love Postcard Generator</title>
     <meta name="description" content="অনলাইনে তৈরি করুন সুন্দর Vintage Love Postcard। পছন্দের ডিজাইন ও প্রেমের উক্তি নির্বাচন করুন, নিজের লেখা যোগ করুন এবং HD পোস্টকার্ড ডাউনলোড করুন।" />
+
+    <!-- Telegram Web App SDK & CloudStorage compatibility guard -->
+    <script>
+      // 1. If Telegram WebApp environment has not reported a version >= 6.9, default initParams to 8.0
+      try {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          var rawStored = window.sessionStorage.getItem('__telegram__initParams');
+          var parsed = null;
+          try {
+            parsed = rawStored ? JSON.parse(rawStored) : {};
+          } catch(e) {
+            parsed = {};
+          }
+          if (!parsed) parsed = {};
+          if (!parsed.tgWebAppVersion || parsed.tgWebAppVersion === '6.0') {
+            parsed.tgWebAppVersion = '8.0';
+            window.sessionStorage.setItem('__telegram__initParams', JSON.stringify(parsed));
+          }
+        }
+      } catch(e) {}
+
+      // 2. Intercept console.error for CloudStorage version limitation
+      (function() {
+        var origConsoleError = console.error;
+        console.error = function() {
+          var firstArg = arguments.length > 0 ? String(arguments[0]) : '';
+          if (
+            firstArg.indexOf('[Telegram.WebApp] CloudStorage is not supported') !== -1 ||
+            firstArg.indexOf('WebAppMethodUnsupported') !== -1
+          ) {
+            return;
+          }
+          return origConsoleError.apply(console, arguments);
+        };
+      })();
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      // Safe Telegram WebApp initialization and universal CloudStorage fallback
+      try {
+        if (window.Telegram && window.Telegram.WebApp) {
+          var tg = window.Telegram.WebApp;
+
+          // Always ensure CloudStorage functions safely without throwing WebAppMethodUnsupported
+          var memoryFallbackPrefix = 'tg_cloud_fallback_';
+          var safeCloudStorage = {
+            setItem: function(key, value, callback) {
+              try {
+                localStorage.setItem(memoryFallbackPrefix + key, value);
+                if (typeof callback === 'function') callback(null, true);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            },
+            getItem: function(key, callback) {
+              try {
+                var val = localStorage.getItem(memoryFallbackPrefix + key);
+                if (typeof callback === 'function') callback(null, val);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            },
+            getItems: function(keys, callback) {
+              try {
+                var result = {};
+                (keys || []).forEach(function(k) {
+                  result[k] = localStorage.getItem(memoryFallbackPrefix + k);
+                });
+                if (typeof callback === 'function') callback(null, result);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            },
+            removeItem: function(key, callback) {
+              try {
+                localStorage.removeItem(memoryFallbackPrefix + key);
+                if (typeof callback === 'function') callback(null, true);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            },
+            removeItems: function(keys, callback) {
+              try {
+                (keys || []).forEach(function(k) {
+                  localStorage.removeItem(memoryFallbackPrefix + k);
+                });
+                if (typeof callback === 'function') callback(null, true);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            },
+            getKeys: function(callback) {
+              try {
+                var keys = [];
+                for (var i = 0; i < localStorage.length; i++) {
+                  var k = localStorage.key(i);
+                  if (k && k.indexOf(memoryFallbackPrefix) === 0) {
+                    keys.push(k.substring(memoryFallbackPrefix.length));
+                  }
+                }
+                if (typeof callback === 'function') callback(null, keys);
+              } catch (e) {
+                if (typeof callback === 'function') callback(e);
+              }
+              return safeCloudStorage;
+            }
+          };
+
+          // If CloudStorage is unsupported or throws on current version, override with safe implementation
+          var needsPolyfill = true;
+          try {
+            if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.9')) {
+              needsPolyfill = false;
+            }
+          } catch(e) {
+            needsPolyfill = true;
+          }
+
+          if (needsPolyfill) {
+            try {
+              Object.defineProperty(tg, 'CloudStorage', {
+                value: safeCloudStorage,
+                writable: true,
+                configurable: true,
+                enumerable: true
+              });
+            } catch (pErr) {
+              tg.CloudStorage = safeCloudStorage;
+            }
+          }
+
+          if (typeof tg.ready === 'function') {
+            tg.ready();
+          }
+          if (typeof tg.expand === 'function') {
+            tg.expand();
+          }
+          try {
+            if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#0e0c0b');
+            if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#0e0c0b');
+          } catch (e) {}
+        }
+      } catch (tgErr) {
+        console.warn('Telegram init safety check:', tgErr);
+      }
+    </script>
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />

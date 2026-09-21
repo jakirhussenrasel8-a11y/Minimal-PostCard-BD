@@ -1,4 +1,5 @@
 // Ad Service integration for Monetization SDK (Zone: 11850821)
+import { isTelegramWebApp } from './telegram';
 
 declare global {
   interface Window {
@@ -18,6 +19,12 @@ let inAppInitialized = false;
 export const initInAppInterstitial = (): void => {
   if (typeof window === 'undefined') return;
   if (inAppInitialized) return;
+
+  // In Telegram WebApp, skip aggressive automatic pop-ins to prevent webview interruption
+  if (isTelegramWebApp()) {
+    console.info('Telegram WebApp detected: in-app interstitial suppressed to maintain stability.');
+    return;
+  }
 
   const tryInit = () => {
     if (typeof window.show_11850821 === 'function') {

@@ -50,6 +50,26 @@ export function shareToWhatsApp(data: ShareData): void {
 }
 
 /**
+ * Share to Telegram
+ */
+export function shareToTelegram(data: ShareData): void {
+  const shareText = buildShareText(data);
+  const shareUrl = getShareUrl();
+  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+
+  if (typeof window !== 'undefined' && window.Telegram?.WebApp?.openTelegramLink) {
+    try {
+      window.Telegram.WebApp.openTelegramLink(telegramUrl);
+      return;
+    } catch {
+      // Fallback
+    }
+  }
+
+  window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+}
+
+/**
  * Share to Facebook
  */
 export function shareToFacebook(data: ShareData): void {

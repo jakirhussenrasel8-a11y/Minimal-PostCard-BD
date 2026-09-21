@@ -19,6 +19,7 @@ import { Footer } from './components/Footer';
 import { PrivacyPolicy, TermsAndConditions, ContactPage } from './components/StaticPages';
 import { exportPostcardNode } from './lib/exportPostcard';
 import { initInAppInterstitial } from './lib/adService';
+import { initTelegramWebApp, isTelegram, openSafeLink } from './lib/telegram';
 import {
   Sparkles,
   Flame,
@@ -83,6 +84,15 @@ export default function App() {
   useEffect(() => {
     recordTabNavigation(activeTab);
   }, [activeTab, recordTabNavigation]);
+
+  // Telegram WebApp initialization & state
+  const [inTelegram, setInTelegram] = useState<boolean>(false);
+  const [dismissTelegramBanner, setDismissTelegramBanner] = useState<boolean>(false);
+
+  useEffect(() => {
+    initTelegramWebApp();
+    setInTelegram(isTelegram());
+  }, []);
 
   // Monetization SDK: In-App Interstitial initialization
   useEffect(() => {
@@ -213,6 +223,38 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0e0c0b] text-[#f5ebd7] selection:bg-[#7b2c28] selection:text-[#fff4e3]">
+      {/* Telegram Optimization Banner */}
+      {inTelegram && !dismissTelegramBanner && (
+        <aside
+          aria-label="টেলিগ্রাম ব্রাউজার নোটিশ"
+          className="bg-[#1c1410] border-b border-[#d4af37]/40 px-3.5 py-2 text-xs flex items-center justify-between gap-2 text-[#ffd875] z-50 sticky top-0"
+        >
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-base flex-shrink-0">💌</span>
+            <span className="truncate text-[#f5ebd7] text-xs font-serif">
+              টেলিগ্রামে পোস্টকার্ড জেনারেটর চলছে। ব্রাউজারের পূর্ণ সুবিধার জন্য:
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => openSafeLink(window.location.href)}
+              className="px-2.5 py-1 bg-gradient-to-r from-[#7b2c28] to-[#9c3730] hover:brightness-110 text-[#fff8ee] rounded-lg font-serif text-[11px] font-semibold border border-[#d4af37]/50 shadow-sm transition active:scale-95"
+            >
+              Chrome / ব্রাউজারে খুলুন
+            </button>
+            <button
+              type="button"
+              onClick={() => setDismissTelegramBanner(true)}
+              className="text-[#a89880] hover:text-[#f5ebd7] p-1 transition"
+              aria-label="Close notice"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </aside>
+      )}
+
       {/* Navbar */}
       <Navbar
         activeTab={activeTab}

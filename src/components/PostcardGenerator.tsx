@@ -18,6 +18,7 @@ import { DownloadGateModal } from './DownloadGateModal';
 import { exportPostcardNode } from '../lib/exportPostcard';
 import {
   shareToWhatsApp,
+  shareToTelegram,
   shareToFacebook,
   shareToMessenger,
   copyPostcardLink,
@@ -370,6 +371,12 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
     setTimeout(() => setShareStatusMessage(null), 4000);
   };
 
+  const handleShareTelegram = () => {
+    shareToTelegram(getShareData());
+    setShareStatusMessage('Telegram ওপেন হচ্ছে...');
+    setTimeout(() => setShareStatusMessage(null), 4000);
+  };
+
   const handleShareFacebook = () => {
     shareToFacebook(getShareData());
     setShareStatusMessage('Facebook ওপেন হচ্ছে...');
@@ -573,6 +580,17 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
                 >
                   <MessageCircle className="w-4 h-4 text-[#25D366]" />
                   <span>WhatsApp</span>
+                </button>
+
+                {/* Telegram */}
+                <button
+                  type="button"
+                  onClick={handleShareTelegram}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#112433] hover:bg-[#163045] border border-[#229ED9]/40 text-[#54c4ff] text-xs font-serif font-medium shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  title="Telegram-এ পোস্টকার্ড শেয়ার করুন"
+                >
+                  <Send className="w-4 h-4 text-[#229ED9]" />
+                  <span>Telegram</span>
                 </button>
 
                 {/* Facebook */}
