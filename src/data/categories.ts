@@ -1,0 +1,47 @@
+import { CategoryItem } from '../types';
+
+export const MAIN_CATEGORIES: CategoryItem[] = [
+  { id: 'love', name: 'Love', nameBn: 'প্রেম', emoji: '❤️', description: 'হৃদয়ের গভীর অনুভূতির পোস্টকার্ড' },
+  { id: 'romantic', name: 'Romantic', nameBn: 'রোমান্টিক', emoji: '🌹', description: 'প্রিয় মানুষের জন্য মিষ্টি কথামালা' },
+  { id: 'heartbreak', name: 'Heartbreak', nameBn: 'বিরহ', emoji: '💔', description: 'হারিয়ে যাওয়া ভালোবাসার স্মৃতি' },
+  { id: 'missing', name: 'Missing', nameBn: 'মিস করা', emoji: '🥺', description: 'দূরে থাকা মানুষটির জন্য অপেক্ষা' },
+  { id: 'rain', name: 'Rain', nameBn: 'বৃষ্টি', emoji: '🌧️', description: 'বৃষ্টিভেজা দুপুর ও স্মৃতির ভেলা' },
+  { id: 'night', name: 'Night Vibes', nameBn: 'রাতের অনুভূতি', emoji: '🌙', description: 'নিঝুম রাতের না বলা অনুভূতির চিঠি' },
+  { id: 'love-letter', name: 'Love Letter', nameBn: 'প্রেমপত্র', emoji: '💌', description: 'পুরনো দিনের হলুদ কাগজের প্রেমপত্র' },
+  { id: 'proposal', name: 'Proposal', nameBn: 'প্রপোজ', emoji: '💍', description: 'ভালোবাসার মধুর প্রস্তাব' },
+  { id: 'birthday', name: 'Birthday', nameBn: 'জন্মদিন', emoji: '🎂', description: 'প্রিয়জনের জন্মদিনের বিশেষ শুভেচ্ছা' },
+  { id: 'anniversary', name: 'Anniversary', nameBn: 'Anniversary', emoji: '💑', description: 'একসাথে পথচলার ভালোবাসার বছর' },
+  { id: 'unrequited', name: 'One Sided Love', nameBn: 'একতরফা প্রেম', emoji: '🖤', description: 'একাকী ভালোবাসার নীরব কথন' },
+  { id: 'memories', name: 'Memories', nameBn: 'স্মৃতি', emoji: '🌸', description: 'পুরনো অ্যালবামের অমলিন মুহূর্ত' },
+  { id: 'classic-vintage', name: 'Classic Vintage', nameBn: 'Classic Vintage', emoji: '🎞️', description: 'রেট্রো ও নস্টালজিক ভিন্টেজ আর্টওয়ার্ক' },
+  { id: 'bengali-vintage', name: 'Bengali Vintage', nameBn: 'Bengali Vintage', emoji: '🇧🇩', description: 'গ্রামবাংলার রূপ ও খাঁটি বাঙালি ঐতিহ্য' },
+];
+
+export const ALL_TAG_CATEGORIES = [
+  'Romantic Couple',
+  'Old Love Letter',
+  'Rose',
+  'Rain',
+  'Umbrella',
+  'Moonlight',
+  'Railway Station',
+  'Old Café',
+  'Vintage House',
+  'Cinema',
+  'Nature',
+  'Lake',
+  'River',
+  'Sunset',
+  'Coffee',
+  'Flowers',
+  'Envelope',
+  'Old Paper',
+  'Newspaper',
+  'Film Photography',
+  'Bengali Vintage',
+  'Sad Love',
+  'Long Distance',
+  'Proposal',
+  'Anniversary',
+  'Valentine'
+];
