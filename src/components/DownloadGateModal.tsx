@@ -3,6 +3,7 @@ import { SITE_CONFIG } from '../config/site';
 import { X, ExternalLink, Download, CheckCircle2, Lock, Sparkles, AlertCircle, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { triggerRewardedPopup, triggerRewardedInterstitial } from '../lib/adService';
+import { openSafeLink, isTelegram } from '../lib/telegram';
 
 interface DownloadGateModalProps {
   isOpen: boolean;
@@ -88,9 +89,13 @@ export const DownloadGateModal: React.FC<DownloadGateModalProps> = ({
     });
 
     try {
-      const newTab = window.open(SITE_CONFIG.sponsorUrl, '_blank', 'noopener,noreferrer');
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        setPopupBlocked(true);
+      if (isTelegram()) {
+        openSafeLink(SITE_CONFIG.sponsorUrl);
+      } else {
+        const newTab = window.open(SITE_CONFIG.sponsorUrl, '_blank', 'noopener,noreferrer');
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+          setPopupBlocked(true);
+        }
       }
     } catch {
       setPopupBlocked(true);

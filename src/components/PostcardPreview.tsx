@@ -3,7 +3,7 @@ import { PostcardTemplate, GeneratorState, BorderStyleType, FontFamilyType } fro
 import { PostcardArtwork } from './PostcardArtwork';
 import { PostcardStamp } from './PostcardStamp';
 import { ASPECT_RATIOS } from '../data/aspectRatios';
-import { shareToWhatsApp, shareToFacebook, shareToMessenger, copyPostcardLink, ShareData } from '../lib/shareUtils';
+import { shareToWhatsApp, shareToTelegram, shareToFacebook, shareToMessenger, copyPostcardLink, ShareData } from '../lib/shareUtils';
 import { MessageCircle, Facebook, Send, Share2, Check } from 'lucide-react';
 
 interface PostcardPreviewProps {
@@ -37,6 +37,12 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
       e.stopPropagation();
       shareToFacebook(getShareData());
       showToast('Facebook ওপেন হচ্ছে...');
+    };
+
+    const handleShareTelegram = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      shareToTelegram(getShareData());
+      showToast('Telegram ওপেন হচ্ছে...');
     };
 
     const handleShareMessenger = (e: React.MouseEvent) => {
@@ -272,6 +278,17 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
               aria-label="WhatsApp-এ শেয়ার করুন"
             >
               <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
+            {/* Telegram */}
+            <button
+              type="button"
+              onClick={handleShareTelegram}
+              className="p-1 sm:p-1.5 rounded-full hover:bg-[#0088cc]/20 text-[#29b6f6] transition transform active:scale-90"
+              title="Telegram-এ শেয়ার করুন"
+              aria-label="Telegram-এ শেয়ার করুন"
+            >
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-[-20deg]" />
             </button>
 
             {/* Facebook */}

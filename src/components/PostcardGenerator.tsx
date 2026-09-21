@@ -15,7 +15,8 @@ import { ASPECT_RATIOS } from '../data/aspectRatios';
 import { PostcardPreview } from './PostcardPreview';
 import { PostcardArtwork } from './PostcardArtwork';
 import { DownloadGateModal } from './DownloadGateModal';
-import { exportPostcardNode } from '../lib/exportPostcard';
+import { ImageDownloadSuccessModal } from './ImageDownloadSuccessModal';
+import { exportPostcardNode, ExportResult } from '../lib/exportPostcard';
 import {
   shareToWhatsApp,
   shareToTelegram,
@@ -139,6 +140,17 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccessMessage, setExportSuccessMessage] = useState<string | null>(null);
   const [shareStatusMessage, setShareStatusMessage] = useState<string | null>(null);
+  const [successModalData, setSuccessModalData] = useState<{
+    isOpen: boolean;
+    imageUrl: string | null;
+    filename: string;
+    format: 'png' | 'jpg';
+  }>({
+    isOpen: false,
+    imageUrl: null,
+    filename: '',
+    format: 'png',
+  });
 
   // Ref to the actual live postcard DOM node
   const previewRef = useRef<HTMLDivElement>(null);
@@ -315,14 +327,23 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
     setIsDownloadGateOpen(false);
 
     try {
-      await exportPostcardNode(previewRef.current, {
+      const result = await exportPostcardNode(previewRef.current, {
         format: state.exportFormat,
         quality: 0.98,
         filename: `MinimalPostCardBD_${state.selectedPostcard.title.replace(/\s+/g, '_')}`,
         pixelRatio: 2.5,
       });
-      setExportSuccessMessage('🎉 আপনার HD পোস্টকার্ডটি সফলভাবে ডাউনলোড হয়েছে!');
+
+      setExportSuccessMessage('🎉 আপনার HD পোস্টকার্ডটি সফলভাবে প্রস্তুত ও ডাউনলোড হয়েছে!');
       setTimeout(() => setExportSuccessMessage(null), 5000);
+
+      // Open ImageDownloadSuccessModal with image preview and multi-action options (essential for Telegram & mobile)
+      setSuccessModalData({
+        isOpen: true,
+        imageUrl: result.dataUrl,
+        filename: result.filename,
+        format: state.exportFormat,
+      });
     } catch (err) {
       console.error('Export failure:', err);
       alert('পোস্টকার্ড রেন্ডার করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
@@ -341,14 +362,23 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
       await triggerRewardedInterstitial();
 
       // User reward: HD export without waiting
-      await exportPostcardNode(previewRef.current, {
+      const result = await exportPostcardNode(previewRef.current, {
         format: state.exportFormat,
         quality: 0.98,
         filename: `MinimalPostCardBD_${state.selectedPostcard.title.replace(/\s+/g, '_')}`,
         pixelRatio: 2.8,
       });
-      setExportSuccessMessage('🎉 আপনার Ultra HD পোস্টকার্ডটি সফলভাবে ডাউনলোড হয়েছে!');
+
+      setExportSuccessMessage('🎉 আপনার Ultra HD পোস্টকার্ডটি প্রস্তুত ও ডাউনলোড হয়েছে!');
       setTimeout(() => setExportSuccessMessage(null), 5000);
+
+      // Open ImageDownloadSuccessModal with image preview
+      setSuccessModalData({
+        isOpen: true,
+        imageUrl: result.dataUrl,
+        filename: result.filename,
+        format: state.exportFormat,
+      });
     } catch (err) {
       console.error('Instant export failure:', err);
       alert('পোস্টকার্ড রেন্ডার করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
@@ -1209,6 +1239,16 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
         onClose={() => setIsDownloadGateOpen(false)}
         onDownloadConfirmed={handlePerformDownload}
         isDownloading={isExporting}
+      />
+
+      {/* Image Ready / Telegram Save Modal */}
+      <ImageDownloadSuccessModal
+        isOpen={successModalData.isOpen}
+        onClose={() => setSuccessModalData(prev => ({ ...prev, isOpen: false }))}
+        imageUrl={successModalData.imageUrl}
+        filename={successModalData.filename}
+        format={successModalData.format}
+        onShareTelegram={handleShareTelegram}
       />
     </div>
   );
