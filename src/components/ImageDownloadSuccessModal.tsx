@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Download, Share2, ExternalLink, Check, Copy, Sparkles, X, MessageCircle, Info } from 'lucide-react';
-import { isTelegram, openSafeLink, triggerHaptic } from '../lib/telegram';
+import { Download, Share2, ExternalLink, Check, Copy, Sparkles, X, MessageCircle, Info, Bot, Send } from 'lucide-react';
+import { isTelegram, openSafeLink, triggerHaptic, sendPostcardToTelegramBot } from '../lib/telegram';
+import { SITE_CONFIG } from '../config/site';
 
 interface ImageDownloadSuccessModalProps {
   isOpen: boolean;
@@ -9,6 +10,15 @@ interface ImageDownloadSuccessModalProps {
   filename: string;
   format: 'png' | 'jpg';
   onShareTelegram?: () => void;
+  onSendToBot?: () => void;
+  botDetails?: {
+    templateId: string;
+    recipient?: string;
+    sender?: string;
+    quote?: string;
+    fontFamily?: string;
+    date?: string;
+  };
 }
 
 export const ImageDownloadSuccessModal: React.FC<ImageDownloadSuccessModalProps> = ({
@@ -18,8 +28,11 @@ export const ImageDownloadSuccessModal: React.FC<ImageDownloadSuccessModalProps>
   filename,
   format,
   onShareTelegram,
+  onSendToBot,
+  botDetails,
 }) => {
   const [sharingDirect, setSharingDirect] = useState(false);
+  const [botSent, setBotSent] = useState(false);
   const inTg = isTelegram();
 
   if (!isOpen || !imageUrl) return null;
@@ -64,6 +77,31 @@ export const ImageDownloadSuccessModal: React.FC<ImageDownloadSuccessModalProps>
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleSendToBot = () => {
+    triggerHaptic('medium');
+    setBotSent(true);
+
+    if (onSendToBot) {
+      onSendToBot();
+      return;
+    }
+
+    if (botDetails) {
+      sendPostcardToTelegramBot({
+        botUsername: SITE_CONFIG.telegramBotUsername,
+        templateId: botDetails.templateId,
+        recipient: botDetails.recipient,
+        sender: botDetails.sender,
+        quote: botDetails.quote,
+        fontFamily: botDetails.fontFamily,
+        date: botDetails.date,
+      });
+    } else {
+      const botUrl = `https://t.me/${SITE_CONFIG.telegramBotUsername}?start=postcard_${Date.now()}`;
+      openSafeLink(botUrl);
+    }
   };
 
   const handleOpenInBrowser = () => {
@@ -120,6 +158,18 @@ export const ImageDownloadSuccessModal: React.FC<ImageDownloadSuccessModalProps>
 
           {/* Action Options */}
           <div className="space-y-2.5">
+            {/* Telegram Bot Delivery Option (Directly send to bot so user can download from Telegram chat) */}
+            {inTg && (
+              <button
+                type="button"
+                onClick={handleSendToBot}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#173852] via-[#205277] to-[#173852] hover:from-[#1b4363] hover:to-[#1b4363] text-[#ebf7ff] text-xs sm:text-sm font-serif font-bold border border-[#2ea6ff]/60 shadow-lg cursor-pointer active:scale-98 transition"
+              >
+                <Bot className="w-4 h-4 text-[#54beff]" />
+                <span>{botSent ? '✓ বটে পাঠানো হয়েছে — বটের চ্যাট খুলুন' : '🤖 টেলিগ্রাম বটে পাঠান ও ডাউনলোড করুন'}</span>
+              </button>
+            )}
+
             {/* Direct Save / Native Share */}
             {hasNativeShare && (
               <button

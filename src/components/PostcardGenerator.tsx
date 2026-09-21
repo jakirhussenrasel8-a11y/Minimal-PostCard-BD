@@ -17,6 +17,8 @@ import { PostcardArtwork } from './PostcardArtwork';
 import { DownloadGateModal } from './DownloadGateModal';
 import { ImageDownloadSuccessModal } from './ImageDownloadSuccessModal';
 import { exportPostcardNode, ExportResult } from '../lib/exportPostcard';
+import { isTelegram, sendPostcardToTelegramBot, triggerHaptic } from '../lib/telegram';
+import { SITE_CONFIG } from '../config/site';
 import {
   shareToWhatsApp,
   shareToTelegram,
@@ -57,6 +59,7 @@ import {
   Shuffle,
   Wand2,
   Zap,
+  Bot,
 } from 'lucide-react';
 import { triggerRewardedInterstitial } from '../lib/adService';
 
@@ -220,11 +223,16 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
   const fontOptions: { label: string; value: FontFamilyType }[] = [
     { label: 'Elegant Bengali (সেরিফ)', value: 'BengaliElegant' },
     { label: 'Handwritten (হাতের লেখা)', value: 'Handwritten' },
+    { label: 'Royal Bengali (রাজকীয় তিরো)', value: 'RoyalBengali' },
+    { label: 'Artistic Cursive (আর্টিস্টিক কার্সিভ)', value: 'ArtisticCursive' },
+    { label: 'Poetic Bengali (কাব্যিক সেরিফ)', value: 'PoeticBengali' },
+    { label: 'Modern Minimal (আধুনিক মিনা)', value: 'ModernMinimal' },
     { label: 'Typewriter (টাইপরাইটার)', value: 'Typewriter' },
-    { label: 'Vintage Serif (ভিন্টেজ)', value: 'VintageSerif' },
-    { label: 'Classic (ক্লাসিক)', value: 'Classic' },
+    { label: 'Vintage Serif (ভিন্টেজ রোমান্টিক)', value: 'VintageSerif' },
+    { label: 'Classic Clean (ক্লাসিক ক্লিন)', value: 'Classic' },
     { label: 'Calligraphy (ক্যালিগ্রাফি)', value: 'Calligraphy' },
     { label: 'Old Newspaper (সংবাদপত্র)', value: 'OldNewspaper' },
+    { label: 'Retro Sign (রেট্রো ভিন্টেজ)', value: 'RetroSign' },
   ];
 
   // Vintage effect options
@@ -564,6 +572,30 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
 
               {/* Main Download Buttons */}
               <div className="flex flex-col sm:flex-row gap-2.5 flex-1 w-full sm:w-auto">
+                {/* In Telegram: Direct Bot Delivery Button */}
+                {isTelegram() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('medium');
+                      sendPostcardToTelegramBot({
+                        botUsername: SITE_CONFIG.telegramBotUsername,
+                        templateId: state.selectedPostcard.id,
+                        recipient: state.recipient,
+                        sender: state.sender,
+                        quote: state.selectedQuoteText,
+                        fontFamily: state.fontFamily,
+                        date: state.date,
+                      });
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-[#173852] via-[#205277] to-[#173852] hover:from-[#1b4363] hover:to-[#1b4363] text-[#ebf7ff] text-xs sm:text-sm font-serif font-bold border border-[#2ea6ff]/60 shadow-lg cursor-pointer active:scale-98 transition"
+                    title="টেলিগ্রাম বটে পোস্টকার্ড পাঠান ও চ্যাট থেকে ডাউনলোড করুন"
+                  >
+                    <Bot className="w-4 h-4 text-[#54beff]" />
+                    <span>🤖 বটে পাঠান (Bot Download)</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setIsDownloadGateOpen(true)}
@@ -1249,6 +1281,14 @@ export const PostcardGenerator: React.FC<PostcardGeneratorProps> = ({
         filename={successModalData.filename}
         format={successModalData.format}
         onShareTelegram={handleShareTelegram}
+        botDetails={{
+          templateId: state.selectedPostcard.id,
+          recipient: state.recipient,
+          sender: state.sender,
+          quote: state.selectedQuoteText,
+          fontFamily: state.fontFamily,
+          date: state.date,
+        }}
       />
     </div>
   );

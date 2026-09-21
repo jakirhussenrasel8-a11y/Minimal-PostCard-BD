@@ -28,7 +28,12 @@ export type FontFamilyType =
   | 'Typewriter'
   | 'Classic'
   | 'Calligraphy'
-  | 'OldNewspaper';
+  | 'OldNewspaper'
+  | 'RoyalBengali'
+  | 'PoeticBengali'
+  | 'RetroSign'
+  | 'ArtisticCursive'
+  | 'ModernMinimal';
 
 export type TextPositionType = 'top' | 'center' | 'bottom' | 'split';
 export type TextAlignmentType = 'left' | 'center' | 'right';

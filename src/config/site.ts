@@ -7,4 +7,5 @@ export const SITE_CONFIG = {
   defaultExportFormat: "png" as const,
   defaultExportQuality: 0.95,
   copyrightYear: 2026,
+  telegramBotUsername: "MinimalPostCardBd_bot",
 };

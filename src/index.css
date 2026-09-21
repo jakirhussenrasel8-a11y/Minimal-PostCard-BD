@@ -16,6 +16,18 @@
   .font-typewriter {
     font-family: 'Special Elite', 'Courier Prime', monospace;
   }
+  .font-bengali-tiro {
+    font-family: 'Tiro Bangla', 'Noto Serif Bengali', serif;
+  }
+  .font-bengali-mina {
+    font-family: 'Mina', 'Hind Siliguri', sans-serif;
+  }
+  .font-vintage-cormorant {
+    font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+  }
+  .font-artistic-cursive {
+    font-family: 'Great Vibes', 'Galada', cursive;
+  }
 }
 
 /* Custom Vintage Paper & Grain Backgrounds */

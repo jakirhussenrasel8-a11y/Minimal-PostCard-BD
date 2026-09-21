@@ -71,17 +71,54 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
       }, 3000);
     };
 
+    // Resolve font inline style to guarantee html-to-image and html2canvas preserve the font on download
+    const getFontFamilyStyle = (font: FontFamilyType): string => {
+      switch (font) {
+        case 'Handwritten':
+          return "'Galada', cursive, 'Noto Serif Bengali', serif";
+        case 'Calligraphy':
+        case 'ArtisticCursive':
+          return "'Great Vibes', 'Galada', cursive, 'Noto Serif Bengali', serif";
+        case 'VintageSerif':
+          return "'Playfair Display', 'Cinzel', 'Noto Serif Bengali', serif";
+        case 'Typewriter':
+          return "'Special Elite', 'Courier Prime', monospace";
+        case 'OldNewspaper':
+        case 'RetroSign':
+          return "'Cinzel', 'Playfair Display', 'Noto Serif Bengali', serif";
+        case 'RoyalBengali':
+        case 'PoeticBengali':
+          return "'Tiro Bangla', 'Noto Serif Bengali', serif";
+        case 'ModernMinimal':
+          return "'Mina', 'Hind Siliguri', 'Anek Bangla', sans-serif";
+        case 'Classic':
+          return "'Hind Siliguri', 'Anek Bangla', sans-serif";
+        case 'BengaliElegant':
+        default:
+          return "'Noto Serif Bengali', 'Cormorant Garamond', serif";
+      }
+    };
+
     // Resolve font class
     const getFontClass = (font: FontFamilyType): string => {
       switch (font) {
         case 'Handwritten':
-        case 'Calligraphy':
           return 'font-bengali-handwritten';
+        case 'Calligraphy':
+        case 'ArtisticCursive':
+          return 'font-artistic-cursive';
         case 'VintageSerif':
           return 'font-vintage-serif';
         case 'Typewriter':
-        case 'OldNewspaper':
           return 'font-typewriter';
+        case 'OldNewspaper':
+        case 'RetroSign':
+          return 'font-vintage-serif';
+        case 'RoyalBengali':
+        case 'PoeticBengali':
+          return 'font-bengali-tiro';
+        case 'ModernMinimal':
+          return 'font-bengali-mina';
         case 'Classic':
           return 'font-bengali-sans';
         case 'BengaliElegant':
@@ -202,7 +239,10 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
             <div className="mb-2 sm:mb-3 opacity-90 transition-all">
               <span
                 className="text-xs sm:text-sm font-bengali-serif tracking-wide border-b border-[#d4af37]/30 pb-0.5"
-                style={{ color: state.textColor }}
+                style={{
+                  color: state.textColor,
+                  fontFamily: getFontFamilyStyle(state.fontFamily),
+                }}
               >
                 {state.recipient.startsWith('প্রিয়') ? state.recipient : `প্রিয় ${state.recipient}`}
               </span>
@@ -213,6 +253,7 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
           <div
             className={`max-w-xl my-2 leading-relaxed transition-all ${getFontClass(state.fontFamily)}`}
             style={{
+              fontFamily: getFontFamilyStyle(state.fontFamily),
               fontSize: `${Math.max(16, Math.min(state.fontSize, 42))}px`,
               color: state.textColor,
               fontWeight: state.fontWeight,
@@ -236,7 +277,10 @@ export const PostcardPreview = forwardRef<HTMLDivElement, PostcardPreviewProps>(
               {state.sender && (
                 <span
                   className="text-xs sm:text-sm font-bengali-handwritten italic tracking-wide"
-                  style={{ color: state.textColor }}
+                  style={{
+                    color: state.textColor,
+                    fontFamily: getFontFamilyStyle('Handwritten'),
+                  }}
                 >
                   {state.sender}
                 </span>

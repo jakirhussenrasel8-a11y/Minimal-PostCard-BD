@@ -64,6 +64,7 @@ declare global {
         enableClosingConfirmation(): void;
         openLink(url: string, options?: { try_instant_view?: boolean }): void;
         openTelegramLink(url: string): void;
+        sendData?(data: string): void;
         downloadFile?(params: { url: string; file_name: string }): void;
       };
     };
@@ -253,5 +254,61 @@ export function triggerHaptic(style: 'light' | 'medium' | 'heavy' = 'light'): vo
     window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(style);
   } catch {
     // Ignore
+  }
+}
+
+/**
+ * Sends postcard payload to the Telegram bot via WebApp.sendData if launched via KeyboardButton,
+ * or routes user directly to the bot with the postcard start parameter so the bot can deliver the image.
+ */
+export function sendPostcardToTelegramBot(params: {
+  botUsername?: string;
+  templateId: string;
+  recipient?: string;
+  sender?: string;
+  quote?: string;
+  fontFamily?: string;
+  date?: string;
+}): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const tg = window.Telegram?.WebApp;
+  const botUser = params.botUsername || 'MinimalPostCardBd_bot';
+
+  // 1. Try native WebApp.sendData (available when opened from a KeyboardButton)
+  if (tg && typeof tg.sendData === 'function') {
+    try {
+      const payload = JSON.stringify({
+        action: 'download_postcard',
+        templateId: params.templateId,
+        recipient: params.recipient || '',
+        sender: params.sender || '',
+        quote: params.quote?.substring(0, 150) || '',
+        font: params.fontFamily || '',
+        date: params.date || '',
+        timestamp: Date.now(),
+      });
+      tg.sendData(payload);
+      return true;
+    } catch (e) {
+      console.warn('Telegram sendData notice:', e);
+    }
+  }
+
+  // 2. Fallback / Standard flow: Redirect into bot chat with deep link start parameter
+  try {
+    const compactCode = `pc_${params.templateId}_${Date.now().toString(36)}`;
+    const botUrl = `https://t.me/${botUser}?start=${compactCode}`;
+    
+    if (tg && typeof tg.openTelegramLink === 'function') {
+      tg.openTelegramLink(botUrl);
+      return true;
+    }
+
+    window.open(botUrl, '_blank', 'noopener,noreferrer');
+    return true;
+  } catch (err) {
+    console.warn('Telegram bot redirect error:', err);
+    return false;
   }
 }

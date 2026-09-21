@@ -26,6 +26,15 @@ export async function generatePostcardDataUrl(
   const extension = format === 'jpg' ? 'jpg' : 'png';
   const cleanFilename = `${filename.replace(/[^a-zA-Z0-9_-]/g, '_')}_${Date.now()}.${extension}`;
 
+  // Ensure all web fonts are fully loaded before capturing
+  if (typeof document !== 'undefined' && document.fonts && typeof document.fonts.ready?.then === 'function') {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Continue if fonts.ready fails
+    }
+  }
+
   const exportFilter = (domNode: HTMLElement) => {
     if (!domNode) return true;
     if (domNode.classList && domNode.classList.contains('no-export')) return false;
@@ -36,20 +45,27 @@ export async function generatePostcardDataUrl(
   let dataUrl: string | null = null;
   let blob: Blob | undefined;
 
+  // We set skipFonts: true because Google Fonts are already fully loaded and rendered on the DOM
+  // (and document.fonts.ready has resolved).
+  // When skipFonts is false, html-to-image attempts to inspect cross-origin <link> stylesheet cssRules,
+  // throwing: "Failed to read the 'cssRules' property from 'CSSStyleSheet': Cannot access rules".
+  const htmlToImageOptions = {
+    quality,
+    pixelRatio,
+    cacheBust: false,
+    skipFonts: true,
+    filter: exportFilter,
+  };
+
   try {
     if (format === 'jpg') {
       dataUrl = await toJpeg(node, {
-        quality,
-        pixelRatio,
-        cacheBust: false,
+        ...htmlToImageOptions,
         backgroundColor: '#161311',
-        filter: exportFilter,
       });
     } else {
       dataUrl = await toPng(node, {
-        pixelRatio,
-        cacheBust: false,
-        filter: exportFilter,
+        ...htmlToImageOptions,
       });
     }
   } catch (primaryErr) {
